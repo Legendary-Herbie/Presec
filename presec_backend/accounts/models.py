@@ -34,26 +34,6 @@ class Teacher(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.department}"
-
-class Resources(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    date_added = models.DateTimeField(auto_now_add=True)
-    resource_file = models.FileField(upload_to='resources/')
-    description = models.TextField()
-    title = models.CharField(max_length=200)
-    uploaded_by = models.CharField(max_length=100)
-    subject = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.title
-class Notice(models.Model):
-    title = models.CharField(max_length=200)
-    content = models.TextField()
-    date_posted = models.DateTimeField(auto_now_add=True)
-    posted_by = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.title
     
 class Result(models.Model):
     TERM_CHOICES = (
@@ -69,7 +49,6 @@ class Result(models.Model):
     exam_score = models.FloatField()
     class_score = models.FloatField()
     total_marks = models.FloatField()
-    exam_date = models.DateField()
 
     def __str__(self):
         return f"{self.student.user.username} - {self.subject}"
@@ -91,20 +70,22 @@ class Event(models.Model):
     def __str__(self):
         return f"{self.title} ({self.event_type})"
 
-class Resource(models.Model):
+class Resources(models.Model):
     RESOURCE_TYPES = (
         ('pdf', 'PDF Document'),
         ('video', 'Video'),
         ('link', 'External Link'),
     )
 
+    subject = models.CharField(max_length=100)
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
-    resource_type = models.CharField(max_length=10, choices=RESOURCE_TYPES, default='pdf')
-    file = models.FileField(upload_to='resources/', blank=True, null=True)  # For PDFs or video files
+    resource_type = models.CharField(max_length=10, choices=RESOURCE_TYPES, default='pdf') 
+    resource_file = models.FileField(upload_to='resources/')
     external_link = models.URLField(blank=True, null=True)  # For YouTube or other links
     uploaded_at = models.DateTimeField(auto_now_add=True)
     uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)  # Teacher or Admin
+    # removed redundant OneToOne `user` field to allow multiple resources per user
 
     def __str__(self):
         return self.title
