@@ -3,7 +3,7 @@ from rest_framework import generics
 from .models import Student, Teacher, Event, Resources, Result
 from .serializers import StudentSerializer, TeacherSerializer, ResourcesSerializer, ResultSerializer, EventSerializer
 from django.contrib.auth import get_user_model
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from .serializers import RegisterSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -23,17 +23,19 @@ class ProfileView(APIView):
     def get(self, request):
         return Response({
             "username": request.user.username,
-            "email": request.user.email
+            "email": request.user.email,
+            "is_staff": request.user.is_staff
         })
 
 class EventListView(generics.ListAPIView):
     queryset = Event.objects.all().order_by('-date')  # Latest events first
     serializer_class = EventSerializer
+    permission_classes = [IsAuthenticated]
 
 class EventCreateView(generics.CreateAPIView):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
@@ -41,6 +43,7 @@ class EventCreateView(generics.CreateAPIView):
 class StudentListView(generics.ListAPIView):
     queryset = Student.objects.all().order_by('student_id')
     serializer_class = StudentSerializer
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
 
 class StudentCreateView(generics.CreateAPIView):
@@ -54,6 +57,7 @@ class StudentCreateView(generics.CreateAPIView):
 class TeacherListView(generics.ListAPIView):
     queryset = Teacher.objects.all().order_by('department', 'id')
     serializer_class = TeacherSerializer
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
 class TeacherCreateView(generics.CreateAPIView):
     queryset = Teacher.objects.all()
@@ -66,21 +70,30 @@ class TeacherCreateView(generics.CreateAPIView):
 class ResourceListView(generics.ListAPIView):
     queryset = Resources.objects.all().order_by('-uploaded_at')  # Latest resources first
     serializer_class = ResourcesSerializer
+    permission_classes = [IsAuthenticated]
 
 class ResourceCreateView(generics.CreateAPIView):
     queryset = Resources.objects.all()
     serializer_class = ResourcesSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
     def perform_create(self, serializer):
         serializer.save(uploaded_by=self.request.user)
 
 class ResultListView(generics.ListAPIView):
-    queryset = Result.objects.all().order_by('student__student_id', 'subject')
     serializer_class = ResultSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if hasattr(user, 'student'):
+            return Result.objects.filter(student=user.student).order_by('-recorded_at')
+        elif hasattr(user, 'teacher') or user.is_staff:
+            return Result.objects.all().order_by('student__student_id', 'subject')
+        return Result.objects.none()
 
 class ResultCreateView(generics.CreateAPIView):
     queryset = Result.objects.all()
     serializer_class = ResultSerializer
     read_only_fields = ['id']
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
