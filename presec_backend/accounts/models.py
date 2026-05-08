@@ -49,6 +49,7 @@ class Result(models.Model):
     exam_score = models.FloatField()
     class_score = models.FloatField()
     total_marks = models.FloatField()
+    exam_date = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.student.user.username} - {self.subject}"
