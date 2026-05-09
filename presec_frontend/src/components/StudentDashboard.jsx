@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import ResourceSection from './ResourceSection';
 import StudyPlanner from './StudyPlanner';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 const StudentDashboard = () => {
     const [results, setResults] = useState([]);
@@ -30,6 +31,12 @@ const StudentDashboard = () => {
         fetchData();
     }, []);
 
+    const chartData = results.map(r => ({
+        subject: r.subject,
+        score: r.total_marks,
+        date: new Date(r.recorded_at).toLocaleDateString()
+    })).sort((a, b) => new Date(a.date) - new Date(b.date));
+
     if (loading) return <div className="p-20 text-center animate-pulse">Loading Your Dashboard...</div>;
 
     return (
@@ -45,7 +52,7 @@ const StudentDashboard = () => {
 
             {/* Navigation Tabs */}
             <div className="flex gap-4 border-b border-border pb-2 overflow-x-auto">
-                {['overview', 'resources', 'planner', 'results'].map(tab => (
+                {['overview', 'resources', 'planner', 'results', 'insights'].map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
@@ -125,6 +132,37 @@ const StudentDashboard = () => {
                                 ))}
                             </tbody>
                         </table>
+                    </div>
+                )}
+
+                {activeTab === 'insights' && (
+                    <div className="card p-6">
+                        <h2 className="text-2xl font-bold mb-8">Performance Trends</h2>
+                        <div className="h-[400px] w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={chartData}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                    <XAxis dataKey="date" />
+                                    <YAxis domain={[0, 100]} />
+                                    <Tooltip
+                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                                    />
+                                    <Legend />
+                                    <Line
+                                        type="monotone"
+                                        dataKey="score"
+                                        name="Total Marks"
+                                        stroke="#2563eb"
+                                        strokeWidth={3}
+                                        dot={{ r: 6, fill: '#2563eb' }}
+                                        activeDot={{ r: 8 }}
+                                    />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </div>
+                        <p className="mt-6 text-sm text-muted italic text-center">
+                            Showing performance trend based on recorded academic results.
+                        </p>
                     </div>
                 )}
             </div>
