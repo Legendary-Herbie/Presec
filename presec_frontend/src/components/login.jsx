@@ -14,7 +14,7 @@ const Login = () => {
         setError('');
         const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
         try {
-            const response = await axios.post(`${apiUrl}/api/login/`, {
+            const response = await axios.post(`${apiUrl}/api/accounts/login/`, {
                 username,
                 password,
             });

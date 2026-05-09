@@ -8,6 +8,7 @@ import Login from './components/login.jsx';
 import Register from './components/register.jsx';
 import StudentDashboard from './components/StudentDashboard.jsx';
 import AdminDashboard from './components/AdminDashboard.jsx';
+import TeacherDashboard from './components/TeacherDashboard.jsx';
 import About from './components/About.jsx';
 import Contact from './components/Contact.jsx';
 import DynamicPage from './components/DynamicPage.jsx';
@@ -23,7 +24,7 @@ function App() {
             const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
             if (token) {
                 try {
-                    const res = await axios.get(`${apiUrl}/api/profile/`, {
+                    const res = await axios.get(`${apiUrl}/api/accounts/profile/`, {
                         headers: { Authorization: `Bearer ${token}` }
                     });
                     setUserProfile(res.data);
@@ -108,7 +109,13 @@ function App() {
                             path="/dashboard"
                             element={
                                 userProfile ? (
-                                    userProfile.is_staff ? <AdminDashboard /> : <StudentDashboard />
+                                    userProfile.is_staff ? (
+                                        <AdminDashboard />
+                                    ) : userProfile.role === 'teacher' ? (
+                                        <TeacherDashboard />
+                                    ) : (
+                                        <StudentDashboard />
+                                    )
                                 ) : <Navigate to="/login" />
                             }
                         />

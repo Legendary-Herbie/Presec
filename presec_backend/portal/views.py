@@ -1,21 +1,22 @@
 from rest_framework import viewsets, permissions
 from .models import Subject, Resource, Announcement, StudyPlan, Page
 from .serializers import SubjectSerializer, ResourceSerializer, AnnouncementSerializer, StudyPlanSerializer, PageSerializer
+from accounts.permissions import IsTeacherOrAdmin
 
 class SubjectViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Subject.objects.all()
     serializer_class = SubjectSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-class ResourceViewSet(viewsets.ReadOnlyModelViewSet):
+class ResourceViewSet(viewsets.ModelViewSet):
     queryset = Resource.objects.all()
     serializer_class = ResourceSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsTeacherOrAdmin]
 
-class AnnouncementViewSet(viewsets.ReadOnlyModelViewSet):
+class AnnouncementViewSet(viewsets.ModelViewSet):
     queryset = Announcement.objects.all()
     serializer_class = AnnouncementSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsTeacherOrAdmin]
 
 class StudyPlanViewSet(viewsets.ModelViewSet):
     serializer_class = StudyPlanSerializer

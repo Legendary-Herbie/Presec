@@ -23,7 +23,7 @@ const Register = () => {
         setError('');
         const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
         try {
-            await axios.post(`${apiUrl}/api/register/`, formData);
+            await axios.post(`${apiUrl}/api/accounts/register/`, formData);
             window.location.href = '/login';
         } catch (err) {
             setError(err.response?.data?.error || 'Registration failed. Username may already exist.');
